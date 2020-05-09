@@ -17,7 +17,7 @@
   <test_depend>rostest</test_depend>
   <test_depend>abb_irb2400_support</test_depend>
   <test_depend>abb_irb2400_moveit_plugins</test_depend>
-  <test_depend>lma_kinematics_plugin</test_depend>
+  <test_depend>moveit_kinematics</test_depend>
   <test_depend>xacro</test_depend>
 
   <export>

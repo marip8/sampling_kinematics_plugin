@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  kinetic:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: xenial,
+             ROS_DISTRO: kinetic,
+             ROS_REPO: main,
+             BADGE: xenial,
+             DOCKER_IMAGE: "ros:kinetic"}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}

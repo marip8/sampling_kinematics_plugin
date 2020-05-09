@@ -1,0 +1,7 @@
+<library path="lib/libsampling_kinematics_plugin">
+  <class name="sampling_kinematics_plugin/ExternalAxisSamplingKinematicsPlugin" type="sampling_kinematics_plugin::ExternalAxisSamplingKinematicsPlugin" base_class_type="kinematics::KinematicsBase">
+    <description>
+      External axis sampling kinematics solver plugin for the MoveIt! motion planning framework
+    </description>
+  </class>
+</library>

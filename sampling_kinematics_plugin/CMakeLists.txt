@@ -63,3 +63,16 @@ install(
 #############
 ## Testing ##
 #############
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(${PROJECT_NAME}_test
+    test/abb_irb2400_rail/test.rostest
+    test/utest.cpp
+  )
+  target_link_libraries(${PROJECT_NAME}_test
+    GTest::GTest
+    ${catkin_LIBRARIES}
+    ${PROJECT_NAME}
+  )
+endif()

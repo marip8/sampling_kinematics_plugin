@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- URDF -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find sampling_kinematics_plugin)/test/abb_irb2400_rail/abb_irb2400_rail.xacro'" />
+  <!-- The semantic description that corresponds to the URDF -->
+  <param name="robot_description_semantic" textfile="$(find sampling_kinematics_plugin)test/abb_irb2400_rail/abb_irb2400_rail.srdf" />
+  <!-- Load updated joint limits (override information from URDF) -->
+  <group ns="robot_description_planning">
+    <rosparam command="load" file="$(find sampling_kinematics_plugin)/test/abb_irb2400_rail/joint_limits.yaml"/>
+  </group>
+  <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+  <group ns="robot_description_kinematics">
+    <rosparam command="load" file="$(find sampling_kinematics_plugin)/test/abb_irb2400_rail/kinematics.yaml"/>
+  </group>
+
+  <param name="tip_link" value="tool0" />
+  <param name="root_link" value="robot_base_link" />
+  <param name="group" value="rail_manipulator" />
+
+  <test pkg="sampling_kinematics_plugin" type="sampling_kinematics_plugin_test" test-name="test_abb_rail"/>
+
+</launch>

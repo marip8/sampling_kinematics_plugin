@@ -1,0 +1,10 @@
+rail_manipulator:
+  kinematics_solver: sampling_kinematics_plugin/ExternalAxisSamplingKinematicsPlugin
+  kinematics_solver_search_resolution: 0.1
+  kinematics_solver_timeout: 0.005
+  kinematics_solver_attempts: 1
+  robot_group: manipulator
+  robot_kinematics_solver: lma_kinematics_plugin/LMAKinematicsPlugin
+manipulator:
+#  kinematics_solver: abb_irb2400_manipulator_kinematics/IKFastKinematicsPlugin
+  kinematics_solver: lma_kinematics_plugin/LMAKinematicsPlugin

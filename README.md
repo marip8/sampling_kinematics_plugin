@@ -1,4 +1,6 @@
 # Sampling Kinematics Plugin
+![CI](https://github.com/marip8/sampling_kinematics_plugin/workflows/CI/badge.svg?branch=master)
+
 A MoveIt! kinematics plugin for solving IK with robots mounted on external axes
 
 ## Motivation

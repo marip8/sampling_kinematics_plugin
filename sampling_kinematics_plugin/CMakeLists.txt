@@ -71,7 +71,6 @@ if(CATKIN_ENABLE_TESTING)
     test/utest.cpp
   )
   target_link_libraries(${PROJECT_NAME}_test
-    GTest::GTest
     ${catkin_LIBRARIES}
     ${PROJECT_NAME}
   )

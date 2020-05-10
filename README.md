@@ -4,12 +4,10 @@
 A MoveIt! kinematics plugin for solving IK with robots mounted on external axes
 
 ## Motivation
-Several types of robotic manipulators have closed-form kinematic solutions that are much computationally faster than more generic Jacobian-based solvers.
-A number of MoveIt! plugins exist that leveraging these fast kinematic solutions ([ikfast](http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/ikfast/ikfast_tutorial.html), [moveit_opw_kinematics](https://github.com/JeroenDM/moveit_opw_kinematics_plugin), [ur_kinematics](https://github.com/ros-industrial/universal_robot/tree/kinetic-devel/ur_kinematics)).
+Several types of robotic manipulators have closed-form kinematic solutions that are computationally faster than more generic Jacobian-based solvers.
+A number of MoveIt! plugins exist that leverage these fast kinematic solutions ([ikfast](http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/ikfast/ikfast_tutorial.html), [moveit_opw_kinematics](https://github.com/JeroenDM/moveit_opw_kinematics_plugin), [ur_kinematics](https://github.com/ros-industrial/universal_robot/tree/kinetic-devel/ur_kinematics)).
 However, these plugins cannot be used to solve kinematics when the robot is mounted on an external axis because they only provide joint solutions for the manipulator.
-To obtain a full system kinematic solution, it is possible to discretely sample the joint space of the external axes and then solve the manipulator kinematics at each joint position.
-
-This plugin implements this approach by sampling the joint space of external axes in a motion group and then determining the manipulator joint state using a configurable, manipulator-specific kinematics solver.
+To obtain a full system kinematic solution, it is possible to discretely sample the joint space of the external axes and then solve the manipulator kinematics at each joint position. This project implements this approach by sampling the joint space of external axes in a planning group and then determining the manipulator joint state using a configurable, manipulator-specific MoveIt! kinematics solver plugin.
 
 ## Usage
 This plugin requires two planning groups to be defined in the SRDF

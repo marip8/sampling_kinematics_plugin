@@ -78,14 +78,15 @@ TEST_F(TestPlugin, CompareIKAndFK)
   }
 
   // check if fk for all this solutions gives the same pose
-  Eigen::Isometry3d actual, desired;
+  Eigen::Isometry3d desired;
   tf2::fromMsg(fk_pose, desired);
-  for (auto js : solutions)
+  for (const auto& js : solutions)
   {
     std::vector<geometry_msgs::Pose> poses_out;
     ASSERT_TRUE(this->plugin_->getPositionFK(this->plugin_->getLinkNames(), js, poses_out));
+    Eigen::Isometry3d actual;
     tf2::fromMsg(poses_out.front(), actual);
-    ASSERT_TRUE(actual.isApprox(desired));
+    ASSERT_TRUE(actual.isApprox(desired, std::numeric_limits<double>::digits10));
   }
 }
 

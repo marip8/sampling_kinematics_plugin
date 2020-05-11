@@ -165,24 +165,15 @@ bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_d
   if (!lookupParam(weight_param, tmp_weights, std::vector<double>(n, 1.0)))
   {
     ROS_WARN_STREAM_NAMED(LOG_NAMESPACE, "Using default weight vector (" << n << " x 1.0)");
-    cost_weights_ = std::vector<double>(n, 1.0);
   }
-  else
+  else if (tmp_weights.size() != n)
   {
-    // Check the size of the input weights
-    if (tmp_weights.size() != n)
-    {
-      ROS_WARN_STREAM_NAMED(LOG_NAMESPACE,
-                            "Incorrect number of weights ("
-                              << tmp_weights.size() << " provided, " << n
-                              << " expected). Using default weight vector (" << n << " x 1.0)");
-      cost_weights_ = std::vector<double>(n, 1.0);
-    }
-    else
-    {
-      cost_weights_ = std::move(tmp_weights);
-    }
+    ROS_ERROR_STREAM_NAMED(LOG_NAMESPACE,
+                           "Incorrect number of weights (" << tmp_weights.size() << " provided, "
+                                                           << n << " expected)");
+    return false;
   }
+  cost_weights_ = std::move(tmp_weights);
 
   return true;
 }

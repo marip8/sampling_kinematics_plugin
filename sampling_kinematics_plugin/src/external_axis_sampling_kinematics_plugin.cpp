@@ -131,7 +131,7 @@ bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_d
   }
 
   // Get the name of the plugin to laod
-  const std::string robot_solver_type_param = "robot_kinematics_solver";
+  const std::string robot_solver_type_param = robot_group_name + "/kinematics_solver";
   std::string robot_solver_type;
   if (!lookupParam<std::string>(robot_solver_type_param, robot_solver_type, ""))
   {

@@ -16,7 +16,6 @@ This plugin requires two planning groups to be defined in the SRDF
 
 This plugin requires two additional parameters in the MoveIt! `kinematics.yaml`:
   - `robot_group`: The name of the planning group that represents only the manipulator joints
-  - `robot_kinematics_solver`: The name of the MoveIt! kinematics plugin used by the `robot_group`
 
 An example configuration is shown below:
 
@@ -27,7 +26,6 @@ ext_axis_manipulator:
   kinematics_solver_timeout: 0.005
   kinematics_solver_attempts: 1
   robot_group: manipulator
-  robot_kinematics_solver: ur_kinematics/UR5KinematicsPlugin
 manipulator:
   kinematics_solver: ur_kinematics/UR5KinematicsPlugin
   kinematics_solver_search_resolution: 0.1

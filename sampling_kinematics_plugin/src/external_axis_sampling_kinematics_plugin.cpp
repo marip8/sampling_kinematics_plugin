@@ -433,13 +433,18 @@ bool ExternalAxisSamplingKinematicsPlugin::getPositionFK(const std::vector<std::
     return false;
   }
 
-  Eigen::Isometry3d robot_base_to_tip;
-  tf2::fromMsg(robot_poses[0], robot_base_to_tip);
   Eigen::Isometry3d root_to_robot_base = getRobotBaseTransform(joint_angles[0]);
-  Eigen::Isometry3d root_to_tip = root_to_robot_base * robot_base_to_tip;
 
-  poses.reserve(link_names.size());
-  poses.push_back(tf2::toMsg(root_to_tip));
+  poses.clear();
+  poses.reserve(robot_poses.size());
+
+  for(const auto& robot_pose : robot_poses)
+  {
+    Eigen::Isometry3d robot_base_to_tip;
+    tf2::fromMsg(robot_pose, robot_base_to_tip);
+    Eigen::Isometry3d root_to_tip = root_to_robot_base * robot_base_to_tip;
+    poses.push_back(tf2::toMsg(root_to_tip));
+  }
 
   return true;
 }

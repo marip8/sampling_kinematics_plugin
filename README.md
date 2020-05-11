@@ -16,8 +16,9 @@ This plugin requires two planning groups to be defined in the SRDF
 
 This plugin requires two additional parameters in the MoveIt! `kinematics.yaml`:
   - `robot_group`: The name of the planning group that represents only the manipulator joints
+  - `weights`: (Optional) A vector of joint weights. These weights are applied to joints individually to influence the overall cost of the joint pose solution. The size of this vector must match the number of joints in the planning group
 
-An example configuration is shown below:
+An example configuration is shown below.
 
 ```yaml
 ext_axis_manipulator:
@@ -26,6 +27,7 @@ ext_axis_manipulator:
   kinematics_solver_timeout: 0.005
   kinematics_solver_attempts: 1
   robot_group: manipulator
+  weights: [0.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 manipulator:
   kinematics_solver: ur_kinematics/UR5KinematicsPlugin
   kinematics_solver_search_resolution: 0.1

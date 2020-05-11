@@ -12,11 +12,13 @@ static const std::string LOG_NAMESPACE = "sampling_kinematics_plugin";
 
 namespace
 {
-double distance(const std::vector<double>& a, const std::vector<double>& b)
+double distance(const std::vector<double> &a,
+                const std::vector<double> &b,
+                const std::vector<double> &weights)
 {
   double cost = 0.0;
   for (size_t i = 0; i < a.size(); ++i)
-    cost += std::abs(b[i] - a[i]);
+    cost += weights.at(i) * std::abs(b.at(i) - a.at(i));
   return cost;
 }
 
@@ -155,6 +157,23 @@ bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_d
     ROS_ERROR_STREAM_NAMED(LOG_NAMESPACE, "Failed to initialize robot kinematics solver plugin");
     return false;
   }
+
+  // Get the cost weights
+  const std::string weight_param = "weights";
+  const std::size_t n = joint_model_group_->getActiveJointModelNames().size();
+  std::vector<double> tmp_weights;
+  if (!lookupParam(weight_param, tmp_weights, std::vector<double>(n, 1.0)))
+  {
+    ROS_WARN_STREAM_NAMED(LOG_NAMESPACE, "Using default weight vector (" << n << " x 1.0)");
+  }
+  else if (tmp_weights.size() != n)
+  {
+    ROS_ERROR_STREAM_NAMED(LOG_NAMESPACE,
+                           "Incorrect number of weights (" << tmp_weights.size() << " provided, "
+                                                           << n << " expected)");
+    return false;
+  }
+  cost_weights_ = std::move(tmp_weights);
 
   return true;
 }
@@ -332,7 +351,7 @@ bool ExternalAxisSamplingKinematicsPlugin::searchPositionIK(const std::vector<ge
       }
 
       // Order the solutions according to their distance from the seed state
-      sol.cost = distance(sol.value, ik_seed_state);
+      sol.cost = distance(sol.value, ik_seed_state, cost_weights_);
       sols.push_back(sol);
     }
   }
@@ -385,7 +404,7 @@ bool ExternalAxisSamplingKinematicsPlugin::getPositionIK(const std::vector<geome
     {
       SolWithCost sol;
       sol.value = s;
-      sol.cost = distance(sol.value, seed_state);
+      sol.cost = distance(sol.value, seed_state, cost_weights_);
       all_sols.emplace_back(std::move(sol));
     }
   }

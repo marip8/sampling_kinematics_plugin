@@ -134,5 +134,6 @@ protected:
   const robot_model::JointModelGroup* joint_model_group_;   /** @brief MoveIt joint model group */
   pluginlib::ClassLoader<KinematicsBase> loader_;           /** @brief Kinematics plugin loader for the robot kinematics plugin */
   kinematics::KinematicsBasePtr solver_;                    /** @brief Kinematics solver plugin for the robot */
+  std::vector<double> cost_weights_;                        /** @brief Weights to be applied to each joint when evaluating the cost of a joint pose solution */
 };
 }  // namespace sampling_kinematics_plugin

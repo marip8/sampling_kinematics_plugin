@@ -309,71 +309,53 @@ bool ExternalAxisSamplingKinematicsPlugin::searchPositionIK(const geometry_msgs:
 }
 
 bool ExternalAxisSamplingKinematicsPlugin::searchPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses,
-                                                          const std::vector<double>& ik_seed_state, double timeout,
-                                                          const std::vector<double>& consistency_limits,
+                                                          const std::vector<double>& ik_seed_state, double /*timeout*/,
+                                                          const std::vector<double>& /*consistency_limits*/,
                                                           std::vector<double>& solution, const IKCallbackFn& solution_callback,
                                                           moveit_msgs::MoveItErrorCodes& error_code,
-                                                          const kinematics::KinematicsQueryOptions& options,
+                                                          const kinematics::KinematicsQueryOptions& /*options*/,
                                                           const robot_state::RobotState* /*reference_state*/) const
 {
-  double min, max;
-  if (!getFreeJointLimits(min, max))
-    return false;
-
-  std::size_t count = static_cast<std::size_t>(std::floor((max - min) / search_discretization_));
-  std::vector<SolWithCost> sols;
-  sols.reserve(count);
-
-  std::vector<double> robot_seed_state(ik_seed_state.begin() + 1, ik_seed_state.end());
-  for (std::size_t i = 0; i < count; ++i)
+  // Pass through to the getPositionIK method to get all IK solutions in order of lowest cost
+  std::vector<std::vector<double>> sols;
+  KinematicsResult tmp_result;
+  if (getPositionIK(ik_poses, ik_seed_state, sols, tmp_result, kinematics::KinematicsQueryOptions()))
   {
-    double joint_position = min + (i * search_discretization_);
-
-    // Get the IK pose relative to the robot base frame
-    geometry_msgs::Pose new_ik_pose = getUpdatedPose(ik_poses.front(), joint_position);
-
-    // Solve IK using the robot IK plugin
-    // Pass an "empty" callback as the solution callback for the robot IK plugin; the solution_callback should be checked
-    // with the full joint state, not just the robot joints
-    SolWithCost sol;
-    if (solver_->searchPositionIK({ new_ik_pose }, robot_seed_state, timeout, consistency_limits, sol.value, 0,
-                                     error_code, options))
+    // Check the full solution using the provided callback
+    if (solution_callback)
     {
-      sol.value.insert(sol.value.begin(), joint_position);
-
-      // Check the full solution using the provided callback
-      if (solution_callback)
+      // Iterate through the solutions, and return the first solution that passes the callback
+      for (const auto &sol : sols)
       {
         moveit_msgs::MoveItErrorCodes tmp_error;
-        solution_callback(ik_poses.front(), sol.value, tmp_error);
-        if (tmp_error.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
-          continue;
+        solution_callback(ik_poses.front(), sol, tmp_error);
+        if (tmp_error.val == moveit_msgs::MoveItErrorCodes::SUCCESS)
+        {
+          solution = sol;
+          error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+          return true;
+        }
       }
-
-      // Order the solutions according to their distance from the seed state
-      sol.cost = distance(sol.value, ik_seed_state, cost_weights_);
-      sols.push_back(sol);
+      ROS_DEBUG_STREAM_NAMED(LOG_NAMESPACE, "IK solutions passed the validity callback");
+    }
+    else
+    {
+      // Return the first solution if no validity callback was defined
+      solution = sols.front();
+      error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+      return true;
     }
   }
 
-  if (sols.empty())
-  {
-    ROS_WARN_STREAM_NAMED(LOG_NAMESPACE, "No IK solutions found");
-    error_code.val = moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION;
-    return false;
-  }
-
-  // Sort the solutions by lowest joint distance from the solution
-  std::sort(sols.begin(), sols.end());
-  solution = sols.front().value;
-
-  return true;
+  // IK failed
+  error_code.val = moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION;
+  return false;
 }
 
 bool ExternalAxisSamplingKinematicsPlugin::getPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses,
-                                                    const std::vector<double>& ik_seed_state,
-                                                    std::vector<std::vector<double>>& solutions, KinematicsResult& /*result*/,
-                                                    const kinematics::KinematicsQueryOptions& options) const
+                                                         const std::vector<double>& ik_seed_state,
+                                                         std::vector<std::vector<double>>& solutions, KinematicsResult& /*result*/,
+                                                         const kinematics::KinematicsQueryOptions& options) const
 {
   if (ik_poses.size() > 1 || ik_poses.size() == 0)
   {
@@ -381,16 +363,22 @@ bool ExternalAxisSamplingKinematicsPlugin::getPositionIK(const std::vector<geome
     return false;
   }
 
+  // Get the limits of the free joint
   double min, max;
   if (!getFreeJointLimits(min, max))
     return false;
 
-  std::vector<SolWithCost> all_sols;
+  // Get the number of discrete iterations that will be tested
+  std::size_t count = static_cast<std::size_t>(std::floor((max - min) / search_discretization_));
 
   // Create an IK seed state without the additional joints
   std::vector<double> seed_state(ik_seed_state.begin() + 1, ik_seed_state.end());
 
-  std::size_t count = static_cast<std::size_t>(std::floor((max - min) / search_discretization_));
+  std::vector<SolWithCost> all_sols;
+  // Pre-allocate memory for the solutions.
+  // Take a reasonable guess at the total number of solutions there might be (8 per discretization for spherical wrist industrial robots)
+  all_sols.reserve(count * 8);
+
   for (std::size_t i = 0; i < count; ++i)
   {
     double joint_position = min + (i * search_discretization_);
@@ -398,20 +386,26 @@ bool ExternalAxisSamplingKinematicsPlugin::getPositionIK(const std::vector<geome
 
     std::vector<std::vector<double>> sols;
     KinematicsResult tmp_result;
-
-    solver_->getPositionIK({ new_ik_pose }, seed_state, sols, tmp_result, options);
-    for (auto&& s : sols)
+    if (solver_->getPositionIK({new_ik_pose}, seed_state, sols, tmp_result, options))
     {
-      SolWithCost sol;
-      sol.value = s;
-      sol.cost = distance(sol.value, seed_state, cost_weights_);
-      all_sols.emplace_back(std::move(sol));
+      for (auto &&s : sols)
+      {
+        SolWithCost sol;
+        sol.value = s;
+
+        // Add the external axis joint value to the beginning of the solution
+        sol.value.insert(sol.value.begin(), joint_position);
+
+        // Calculate the cost of the solution
+        sol.cost = distance(sol.value, ik_seed_state, cost_weights_);
+        all_sols.push_back(std::move(sol));
+      }
     }
   }
 
   if (all_sols.empty())
   {
-    ROS_WARN_STREAM_NAMED(LOG_NAMESPACE, "No solutions found");
+    ROS_DEBUG_STREAM_NAMED(LOG_NAMESPACE, "No IK solutions found");
     return false;
   }
 
@@ -419,7 +413,8 @@ bool ExternalAxisSamplingKinematicsPlugin::getPositionIK(const std::vector<geome
   std::sort(all_sols.begin(), all_sols.end());
 
   solutions.clear();
-  for (const SolWithCost sol : all_sols)
+  solutions.reserve(all_sols.size());
+  for (const auto& sol : all_sols)
   {
     solutions.push_back(sol.value);
   }

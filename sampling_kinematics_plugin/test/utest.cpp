@@ -59,31 +59,34 @@ TEST_F(TestPlugin, InitOk)
 
 TEST_F(TestPlugin, CompareIKAndFK)
 {
-  std::vector<geometry_msgs::Pose> poses_out;
-
   // find reachable pose
-  ASSERT_TRUE(
-    this->plugin_->getPositionFK(this->plugin_->getLinkNames(), this->getTestJoints(), poses_out));
-  ASSERT_GT(poses_out.size(), 0);
+  const std::vector<double> joints = this->getTestJoints();
+  geometry_msgs::Pose fk_pose;
+  {
+    std::vector<geometry_msgs::Pose> poses_out;
+    ASSERT_TRUE(this->plugin_->getPositionFK(this->plugin_->getLinkNames(), joints, poses_out));
+    ASSERT_GT(poses_out.size(), 0);
+    fk_pose = poses_out.front();
+  }
 
   // calculate all ik solutions for this pose
   std::vector<std::vector<double>> solutions;
-  kinematics::KinematicsResult result;
-  kinematics::KinematicsQueryOptions options;
-  ASSERT_TRUE(this->plugin_->getPositionIK({poses_out.front()},
-                                           this->getTestJoints(),
-                                           solutions,
-                                           result,
-                                           options));
+  {
+    kinematics::KinematicsResult result;
+    kinematics::KinematicsQueryOptions options;
+    ASSERT_TRUE(this->plugin_->getPositionIK({fk_pose}, joints, solutions, result, options));
+  }
 
   // check if fk for all this solutions gives the same pose
-  Eigen::Isometry3d actual, desired;
-  tf2::fromMsg(poses_out[0], desired);
-  for (auto js : solutions)
+  Eigen::Isometry3d desired;
+  tf2::fromMsg(fk_pose, desired);
+  for (const auto& js : solutions)
   {
-    this->plugin_->getPositionFK(this->plugin_->getLinkNames(), js, poses_out);
-    tf2::fromMsg(poses_out[0], actual);
-    ASSERT_TRUE(actual.isApprox(desired));
+    std::vector<geometry_msgs::Pose> poses_out;
+    ASSERT_TRUE(this->plugin_->getPositionFK(this->plugin_->getLinkNames(), js, poses_out));
+    Eigen::Isometry3d actual;
+    tf2::fromMsg(poses_out.front(), actual);
+    ASSERT_TRUE(actual.isApprox(desired, std::numeric_limits<double>::digits10));
   }
 }
 

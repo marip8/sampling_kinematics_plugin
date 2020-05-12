@@ -8,3 +8,14 @@ rail_manipulator:
 manipulator:
 #  kinematics_solver: abb_irb2400_manipulator_kinematics/IKFastKinematicsPlugin
   kinematics_solver: lma_kinematics_plugin/LMAKinematicsPlugin
+#  kinematics_solver: moveit_opw_kinematics_plugin/MoveItOPWKinematicsPlugin
+#  opw_kinematics_geometric_parameters:
+#    a1:  0.100
+#    a2: -0.135
+#    b:   0.000
+#    c1:  0.615
+#    c2:  0.705
+#    c3:  0.755
+#    c4:  0.085
+#  opw_kinematics_joint_offsets: [0, 0, -1.57079632679, 0, 0, 0]
+#  opw_kinematics_joint_sign_corrections: [1, 1, 1, 1, 1, 1]

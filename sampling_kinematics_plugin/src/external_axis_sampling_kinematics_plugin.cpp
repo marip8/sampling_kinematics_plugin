@@ -35,9 +35,9 @@ ExternalAxisSamplingKinematicsPlugin::ExternalAxisSamplingKinematicsPlugin()
 }
 
 bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_description, const std::string& group_name,
-                                                    const std::string& base_frame,
-                                                    const std::vector<std::string>& tip_frames,
-                                                    double search_discretization)
+                                                      const std::string& base_frame,
+                                                      const std::vector<std::string>& tip_frames,
+                                                      double search_discretization)
 {
   ROS_INFO_STREAM_NAMED(LOG_NAMESPACE, "ExternalAxisSamplingKinematicsPlugin initializing");
 

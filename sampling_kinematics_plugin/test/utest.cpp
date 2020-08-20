@@ -45,7 +45,7 @@ class TestPlugin : public ::testing::Test
     ASSERT_TRUE(nh.getParam(TIP_LINK_PARAM, tip_link));
     ASSERT_TRUE(nh.getParam(SOLVER_PARAM, solver));
     ASSERT_NO_THROW(plugin_.reset(loader_.createUnmanagedInstance(solver)));
-    ASSERT_TRUE(plugin_->initialize(ROBOT_DESCRIPTION, group_name, root_link, tip_link, 0.1));
+    ASSERT_TRUE(plugin_->initialize(ROBOT_DESCRIPTION, group_name, root_link, {tip_link}, 0.1));
   }
 
   kinematics::KinematicsBasePtr plugin_;
@@ -86,7 +86,13 @@ TEST_F(TestPlugin, CompareIKAndFK)
     ASSERT_TRUE(this->plugin_->getPositionFK(this->plugin_->getLinkNames(), js, poses_out));
     Eigen::Isometry3d actual;
     tf2::fromMsg(poses_out.front(), actual);
-    ASSERT_TRUE(actual.isApprox(desired, std::numeric_limits<double>::digits10));
+
+    Eigen::Isometry3d diff = actual.inverse() * desired;
+    double angular_diff = Eigen::Quaterniond(actual.linear())
+                            .angularDistance(Eigen::Quaterniond(desired.linear()));
+
+    EXPECT_LT(diff.translation().norm(), 1.0e-5);
+    EXPECT_LT(angular_diff, 1.0e-3);
   }
 }
 

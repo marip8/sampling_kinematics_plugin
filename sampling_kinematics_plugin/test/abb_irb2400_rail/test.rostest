@@ -15,7 +15,7 @@
   </group>
 
   <param name="tip_link" value="tool0" />
-  <param name="root_link" value="robot_base_link" />
+  <param name="root_link" value="rail_base_link" />
   <param name="group" value="rail_manipulator" />
 
   <test pkg="sampling_kinematics_plugin" type="sampling_kinematics_plugin_test" test-name="test_abb_rail"/>

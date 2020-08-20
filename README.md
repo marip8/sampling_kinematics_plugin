@@ -24,8 +24,6 @@ An example configuration is shown below.
 ext_axis_manipulator:
   kinematics_solver: sampling_kinematics_plugin/ExternalAxisSamplingKinematicsPlugin
   kinematics_solver_search_resolution: 0.1
-  kinematics_solver_timeout: 0.005
-  kinematics_solver_attempts: 1
   robot_group: manipulator
   weights: [0.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 manipulator:
@@ -34,3 +32,5 @@ manipulator:
   kinematics_solver_timeout: 0.005
   kinematics_solver_attempts: 1
 ```
+
+> Note: The sampling kinematics plugin does not currently utilize the `kinematics_solver_timeout` or `kinematics_solver_attempts` parameters

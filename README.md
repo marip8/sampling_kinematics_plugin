@@ -14,7 +14,8 @@ This plugin requires two planning groups to be defined in the SRDF
   1. A planning group for the manipulator alone (i.e. does not include the external axis joints)
   2. A planning group which includes the manipulator and external axis joints
 
-This plugin requires two additional parameters in the MoveIt! `kinematics.yaml`:
+This plugin requires specific parameters in the MoveIt! `kinematics.yaml`:
+  - `kinematics_solver_search_resolution`: The resolution at which the joint range of the external axis should be discretized when solving IK
   - `robot_group`: The name of the planning group that represents only the manipulator joints
   - `weights`: (Optional) A vector of joint weights. These weights are applied to joints individually to influence the overall cost of the joint pose solution. The size of this vector must match the number of joints in the planning group
 

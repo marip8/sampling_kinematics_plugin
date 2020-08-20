@@ -45,7 +45,7 @@ class TestPlugin : public ::testing::Test
     ASSERT_TRUE(nh.getParam(TIP_LINK_PARAM, tip_link));
     ASSERT_TRUE(nh.getParam(SOLVER_PARAM, solver));
     ASSERT_NO_THROW(plugin_.reset(loader_.createUnmanagedInstance(solver)));
-    ASSERT_TRUE(plugin_->initialize(ROBOT_DESCRIPTION, group_name, root_link, tip_link, 0.1));
+    ASSERT_TRUE(plugin_->initialize(ROBOT_DESCRIPTION, group_name, root_link, {tip_link}, 0.1));
   }
 
   kinematics::KinematicsBasePtr plugin_;

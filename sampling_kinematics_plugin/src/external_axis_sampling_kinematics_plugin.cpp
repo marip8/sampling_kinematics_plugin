@@ -34,28 +34,14 @@ ExternalAxisSamplingKinematicsPlugin::ExternalAxisSamplingKinematicsPlugin()
 {
 }
 
-bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_description, const std::string& group_name,
-                                                    const std::string& base_frame,
-                                                    const std::vector<std::string>& tip_frames,
-                                                    double search_discretization)
+bool ExternalAxisSamplingKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model, const std::string& group_name,
+                                                      const std::string& base_frame, const std::vector<std::string>& tip_frames,
+                                                      double search_discretization)
 {
   ROS_INFO_STREAM_NAMED(LOG_NAMESPACE, "ExternalAxisSamplingKinematicsPlugin initializing");
 
-  setValues(robot_description, group_name, base_frame, tip_frames, search_discretization);
+  storeValues(robot_model, group_name, base_frame, tip_frames, search_discretization);
 
-  // Initialize MoveIt objects
-  rdf_loader::RDFLoader rdf_loader(robot_description_);
-  const srdf::ModelSharedPtr& srdf = rdf_loader.getSRDF();
-  const urdf::ModelInterfaceSharedPtr& urdf_model = rdf_loader.getURDF();
-
-  if (!urdf_model || !srdf)
-  {
-    ROS_ERROR_NAMED(LOG_NAMESPACE, "URDF and SRDF must be loaded for ExternalAxisSamplingKinematicsPlugin kinematics "
-                                   "solver to work.");
-    return false;
-  }
-
-  robot_model_.reset(new robot_model::RobotModel(urdf_model, srdf));
   robot_state_.reset(new robot_state::RobotState(robot_model_));
 
   joint_model_group_ = robot_model_->getJointModelGroup(group_name);
@@ -143,7 +129,7 @@ bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_d
 
   try
   {
-    solver_.reset(loader_.createUnmanagedInstance(robot_solver_type));
+    solver_ = loader_.createInstance(robot_solver_type);
   }
   catch (const pluginlib::ClassLoaderException& ex)
   {
@@ -152,7 +138,7 @@ bool ExternalAxisSamplingKinematicsPlugin::initialize(const std::string& robot_d
   }
 
   // Initialize the plugin with the group that represents the manipulator (the input joint group should have additional joints)
-  if(!solver_->initialize(robot_description, robot_group_name, robot_base_frame_, tip_frames, search_discretization))
+  if(!solver_->initialize(robot_model, robot_group_name, robot_base_frame_, tip_frames, search_discretization))
   {
     ROS_ERROR_STREAM_NAMED(LOG_NAMESPACE, "Failed to initialize robot kinematics solver plugin");
     return false;

@@ -19,6 +19,7 @@ class TestPlugin : public ::testing::Test
   public:
   TestPlugin()
     : ::testing::Test()
+    , rdf_loader_(ROBOT_DESCRIPTION)
     , loader_("moveit_core", "kinematics::KinematicsBase")
   {
   }
@@ -44,11 +45,21 @@ class TestPlugin : public ::testing::Test
     ASSERT_TRUE(nh.getParam(ROOT_LINK_PARAM, root_link));
     ASSERT_TRUE(nh.getParam(TIP_LINK_PARAM, tip_link));
     ASSERT_TRUE(nh.getParam(SOLVER_PARAM, solver));
-    ASSERT_NO_THROW(plugin_.reset(loader_.createUnmanagedInstance(solver)));
-    ASSERT_TRUE(plugin_->initialize(ROBOT_DESCRIPTION, group_name, root_link, {tip_link}, 0.1));
+    ASSERT_NO_THROW(plugin_ = loader_.createInstance(solver));
+
+    // Load the MoveIt robot model
+    const srdf::ModelSharedPtr &srdf = rdf_loader_.getSRDF();
+    ASSERT_NE(srdf, nullptr);
+    const urdf::ModelInterfaceSharedPtr &urdf_model = rdf_loader_.getURDF();
+    ASSERT_NE(urdf_model, nullptr);
+    robot_model_ = std::make_shared<robot_model::RobotModel>(urdf_model, srdf);
+
+    ASSERT_TRUE(plugin_->initialize(*robot_model_, group_name, root_link, {tip_link}, 0.1));
   }
 
-  kinematics::KinematicsBasePtr plugin_;
+  rdf_loader::RDFLoader rdf_loader_;
+  robot_model::RobotModelPtr robot_model_;
+  boost::shared_ptr<kinematics::KinematicsBase> plugin_;
   pluginlib::ClassLoader<kinematics::KinematicsBase> loader_;
 };
 

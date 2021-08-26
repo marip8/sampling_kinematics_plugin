@@ -8,22 +8,6 @@ on:
     branches:
       - master
 jobs:
-  kinetic:
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - {OS_NAME: ubuntu,
-             OS_CODE_NAME: xenial,
-             ROS_DISTRO: kinetic,
-             ROS_REPO: main,
-             BADGE: xenial,
-             DOCKER_IMAGE: "ros:kinetic"}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{matrix.env}}
   melodic:
     strategy:
       fail-fast: false
@@ -35,6 +19,22 @@ jobs:
              ROS_REPO: main,
              BADGE: melodic,
              DOCKER_IMAGE: "ros:melodic"}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
+  noetic:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: focal,
+             ROS_DISTRO: noetic,
+             ROS_REPO: main,
+             BADGE: focal,
+             DOCKER_IMAGE: "ros:noetic"}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

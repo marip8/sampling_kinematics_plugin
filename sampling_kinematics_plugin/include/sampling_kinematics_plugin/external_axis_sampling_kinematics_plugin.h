@@ -62,16 +62,10 @@ public:
   virtual bool getPositionFK(const std::vector<std::string>& link_names, const std::vector<double>& joint_angles,
                              std::vector<geometry_msgs::Pose>& poses) const override;
 
-  inline virtual bool initialize(const std::string& robot_description, const std::string& group_name,
-                                 const std::string& base_name, const std::string& tip_frame, double search_discretization) override
-  {
-    std::vector<std::string> tip_frames;
-    tip_frames.push_back(tip_frame);
-    return initialize(robot_description, group_name, base_name, tip_frames, search_discretization);
-  }
-
-  virtual bool initialize(const std::string& robot_description, const std::string& group_name,
-                          const std::string& base_name, const std::vector<std::string>& tip_frames,
+  virtual bool initialize(const moveit::core::RobotModel &robot_model,
+                          const std::string& group_name,
+                          const std::string& base_frame,
+                          const std::vector<std::string>& tip_frames,
                           double search_discretization) override;
 
   virtual bool
@@ -129,11 +123,10 @@ protected:
 
   std::string robot_base_frame_;                            /** @brief Name of the robot base frame */
   moveit_msgs::KinematicSolverInfo ik_group_info_;          /** @brief Solver information */
-  robot_model::RobotModelConstPtr robot_model_;             /** @brief MoveIt robot model */
   robot_state::RobotStatePtr robot_state_;                  /** @brief MoveIt robot state */
   const robot_model::JointModelGroup* joint_model_group_;   /** @brief MoveIt joint model group */
   pluginlib::ClassLoader<KinematicsBase> loader_;           /** @brief Kinematics plugin loader for the robot kinematics plugin */
-  kinematics::KinematicsBasePtr solver_;                    /** @brief Kinematics solver plugin for the robot */
+  boost::shared_ptr<kinematics::KinematicsBase> solver_;                    /** @brief Kinematics solver plugin for the robot */
   std::vector<double> cost_weights_;                        /** @brief Weights to be applied to each joint when evaluating the cost of a joint pose solution */
 };
 }  // namespace sampling_kinematics_plugin
